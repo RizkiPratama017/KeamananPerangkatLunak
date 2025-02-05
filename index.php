@@ -1,3 +1,15 @@
+<?php
+session_start();
+
+require_once 'functions.php';
+
+$posts = getPosts();
+
+$judul = "Postingers";
+$nama = "John Doe";
+
+?>
+
 <?php require_once 'partials/header.php' ?>
 
 <div class="container">

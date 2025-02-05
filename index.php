@@ -25,11 +25,14 @@ $nama = "John Doe";
     <ul class="list-group">
         <?php foreach ($posts as $post) : ?>
             <li class="list-group-item">
-                <h4><?= $post['title']; ?></h4>
-                <p><?= $post['content']; ?></p>
-                <small>By <?= $post['author']; ?> | <?= $post['created_at']; ?></small>
+                <a href="post.php?id=<?= $post['id']; ?>" class="text-decoration-none">
+                    <h4><?= htmlspecialchars($post['title']); ?></h4>
+                </a>
+                <p><?= nl2br(htmlspecialchars($post['content'])); ?></p>
+                <small>By <?= htmlspecialchars($post['author']); ?> | <?= $post['created_at']; ?></small>
             </li>
         <?php endforeach; ?>
+
     </ul>
 </div>
 

@@ -22,9 +22,10 @@
                     <a class="nav-item nav-link" href="#">About</a>
                 </div>
             </div>
-            <div>
+            <div class="d-flex">
                 <?php if (isset($_SESSION['username'])) : ?>
-                    <a class="nav-item nav-link" href="logout.php">Logout</a>
+                    <a class="nav-item nav-link m-3" href="<?= BASE_URL; ?>admin.php">admin</a>
+                    <a class="nav-item nav-link m-3" href="<?= BASE_URL; ?>logout.php">Logout</a>
                 <?php else : ?>
                     <a class="nav-item nav-link" href="login.php">Login</a>
                 <?php endif; ?>

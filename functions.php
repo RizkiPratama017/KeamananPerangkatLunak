@@ -95,4 +95,33 @@ function register($data)
     return mysqli_affected_rows($conn);
 }
 
-// login
+//Tambah post
+
+if (!function_exists('tambahpost')) {
+    function tambahpost($title, $content, $id_user, $created_at)
+    {
+        $conn = koneksi();
+
+        $query = "INSERT INTO posts (title, content, id_user, created_at) VALUES ('$title', '$content', '$id_user', '$created_at')";
+
+        mysqli_query($conn, $query) or die(mysqli_error($conn));
+        return mysqli_affected_rows($conn);
+    }
+}
+
+// postingan yang di upload user sedang login
+if (!function_exists('PostsUser')) {
+    function PostsUser($id_user)
+    {
+        $conn = koneksi();
+        $query = "SELECT * FROM posts WHERE id_user = '$id_user' ORDER BY created_at DESC";
+        $result = mysqli_query($conn, $query);
+
+        $posts = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $posts[] = $row;
+        }
+
+        return $posts;
+    }
+}

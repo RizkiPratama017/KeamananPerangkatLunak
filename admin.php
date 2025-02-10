@@ -28,6 +28,7 @@ require_once 'partials/header.php';
                     <p class="card-text">Selamat datang, <strong><?= $_SESSION['username']; ?></strong></p>
                     <div class="d-flex justify-content-center gap-3">
                         <a href="post/tambah.php" class="btn btn-primary">Tambah Post</a>
+                        <a href="riwayat.php" class="btn btn-success">Riwayat Post</a>
                         <a href="logout.php" class="btn btn-danger">Logout</a>
                     </div>
                 </div>
@@ -44,6 +45,16 @@ require_once 'partials/header.php';
                                 <p class="card-text"><?= nl2br(htmlspecialchars($post['content'])); ?></p>
                                 <small class="text-muted">Dibuat pada: <?= $post['created_at']; ?></small>
                             </div>
+                            <?php if ($post['is_published'] == 1): ?>
+                                <div class="d-inline-flex ms-3 mb-3">
+                                    <a href="post/edit.php?id=<?= htmlspecialchars($post['id']); ?>" class="btn btn-warning btn-sm me-2">
+                                        Edit
+                                    </a>
+                                    <a href="post/hapus.php?id=<?= htmlspecialchars($post['id']); ?>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus post ini?');">
+                                        Hapus
+                                    </a>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>

@@ -95,21 +95,21 @@ function register($data)
     return mysqli_affected_rows($conn);
 }
 
-//Tambah post
-
+// tambah post
 if (!function_exists('tambahpost')) {
-    function tambahpost($title, $content, $id_user, $created_at)
+    function tambahpost($title, $content, $image, $keywords, $id_user, $created_at)
     {
         $conn = koneksi();
 
-        $query = "INSERT INTO posts (title, content, id_user, created_at) VALUES ('$title', '$content', '$id_user', '$created_at')";
+        $query = "INSERT INTO posts (title, content, image, keywords, id_user, is_published, created_at) 
+                  VALUES ('$title', '$content', '$image', '$keywords', '$id_user', 1, '$created_at')";
 
         mysqli_query($conn, $query) or die(mysqli_error($conn));
         return mysqli_affected_rows($conn);
     }
 }
 
-// postingan yang di upload user sedang login
+// postingan yang diupload oleh user yang sedang login
 if (!function_exists('PostsUser')) {
     function PostsUser($id_user)
     {
@@ -123,5 +123,36 @@ if (!function_exists('PostsUser')) {
         }
 
         return $posts;
+    }
+}
+
+// ambil riwayat revisi post berdasarkan id_user
+if (!function_exists('RiwayatPostUser')) {
+    function RiwayatPostUser($id_user)
+    {
+        $conn = koneksi();
+        $query = "SELECT 
+                    pr.id AS revision_id, 
+                    pr.post_id, 
+                    pr.title, 
+                    pr.content, 
+                    pr.image, 
+                    pr.updated_at, 
+                    p.is_published 
+                  FROM post_revisions pr
+                  INNER JOIN posts p ON pr.post_id = p.id
+                  WHERE p.id_user = '$id_user'
+                  ORDER BY pr.updated_at DESC";
+
+        $result = mysqli_query($conn, $query);
+
+        $revisions = [];
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $revisions[] = $row;
+            }
+        }
+
+        return $revisions;
     }
 }

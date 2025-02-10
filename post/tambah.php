@@ -5,6 +5,7 @@ require_once '../functions.php';
 $judul = "Tambah";
 require_once '../partials/header.php';
 
+
 if (!isset($_SESSION['id_user'])) {
     echo "<script>
         alert('Silakan login terlebih dahulu.');
@@ -13,22 +14,35 @@ if (!isset($_SESSION['id_user'])) {
     exit;
 }
 
+
 if (isset($_POST["tambah"])) {
     $title = $_POST['title'];
     $content = $_POST['content'];
+    $keywords = $_POST['keywords'];
     $id_user = $_SESSION['id_user'];
     $created_at = date("Y-m-d H:i:s");
 
-    // simpan ke database  
-    if (tambahpost($title, $content, $id_user, $created_at) > 0) {
+    // menghandle gambar yang diupload
+    $image = null;
+    if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+        $uploadDir = '../img/';
+        $imagePath = $uploadDir . basename($_FILES['image']['name']);
+
+        if (move_uploaded_file($_FILES['image']['tmp_name'], $imagePath)) {
+            $image = basename($_FILES['image']['name']);
+        }
+    }
+
+    // simpan ke database
+    if (tambahpost($title, $content, $image, $keywords, $id_user, $created_at) > 0) {
         echo "<script>
-            alert('Data berhasil ditambahkan');
+            alert('Post berhasil ditambahkan');
             window.location.href = '../admin.php';
         </script>";
         exit;
     } else {
         echo "<script>
-            alert('Data gagal ditambahkan');
+            alert('Post gagal ditambahkan');
             window.location.href = 'tambah.php'; 
         </script>";
     }
@@ -52,6 +66,16 @@ if (isset($_POST["tambah"])) {
                         <div class="mb-3">
                             <label for="content" class="form-label">Konten:</label>
                             <textarea name="content" id="content" class="form-control" rows="5" placeholder="Tulis konten di sini..." required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="keywords" class="form-label">Kata Kunci:</label>
+                            <input type="text" name="keywords" id="keywords" class="form-control" placeholder="Masukkan kata kunci" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Gambar:</label>
+                            <input type="file" name="image" id="image" class="form-control">
                         </div>
 
                         <div class="text-center">

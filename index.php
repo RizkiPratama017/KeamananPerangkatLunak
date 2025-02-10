@@ -24,15 +24,16 @@ $nama = "John Doe";
     <h2 class="mt-5">Daftar Postingan</h2>
     <ul class="list-group">
         <?php foreach ($posts as $post) : ?>
-            <li class="list-group-item">
-                <a href="post.php?id=<?= $post['id']; ?>" class="text-decoration-none">
-                    <h4><?= htmlspecialchars($post['title']); ?></h4>
-                </a>
-                <p><?= nl2br(htmlspecialchars($post['content'])); ?></p>
-                <small>By <?= htmlspecialchars($post['author']); ?> | <?= $post['created_at']; ?></small>
-            </li>
+            <?php if ($post['is_published'] == 1): ?>
+                <li class="list-group-item">
+                    <a href="post.php?id=<?= htmlspecialchars($post['id']); ?>" class="text-decoration-none">
+                        <h4><?= htmlspecialchars($post['title']); ?></h4>
+                    </a>
+                    <p><?= nl2br(htmlspecialchars($post['content'])); ?></p>
+                    <small>By <?= htmlspecialchars($post['author']); ?> | <?= htmlspecialchars($post['created_at']); ?></small>
+                </li>
+            <?php endif; ?>
         <?php endforeach; ?>
-
     </ul>
 </div>
 

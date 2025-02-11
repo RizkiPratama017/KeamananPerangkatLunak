@@ -139,7 +139,7 @@ if (!function_exists('RiwayatPostUser')) {
                     pr.image, 
                     pr.updated_at, 
                     p.is_published 
-                  FROM post_revisions pr
+                  FROM post_revisions pr 
                   INNER JOIN posts p ON pr.post_id = p.id
                   WHERE p.id_user = '$id_user'
                   ORDER BY pr.updated_at DESC";

@@ -17,18 +17,27 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
-                    <a class="nav-item nav-link active" href="<?= BASE_URL; ?>">Home <span class="sr-only">(current)</span></a>
-                    <a class="nav-item nav-link" href="post.php">Post</a>
+                    <a class="nav-item nav-link active" href="<?= BASE_URL; ?>">Home</a>
+                    <a class="nav-item nav-link" href="#">Post</a>
                     <a class="nav-item nav-link" href="#">About</a>
                 </div>
             </div>
-            <div class="d-flex">
-                <?php if (isset($_SESSION['username'])) : ?>
-                    <a class="nav-item nav-link m-3" href="<?= BASE_URL; ?>admin.php">admin</a>
-                    <a class="nav-item nav-link m-3" href="<?= BASE_URL; ?>logout.php">Logout</a>
-                <?php else : ?>
-                    <a class="nav-item nav-link" href="login.php">Login</a>
-                <?php endif; ?>
-            </div>
+
+            <!-- Cek apakah user sudah login -->
+            <?php if (isset($_SESSION['username'])) : ?>
+                <!-- Dropdown Username -->
+                <div class="dropdown">
+                    <button class="nav-link dropdown-toggle text-dark" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <?= $_SESSION['username']; ?>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="<?= BASE_URL; ?>admin.php">Dashboard</a></li>
+                        <li><a class="dropdown-item" href="<?= BASE_URL; ?>logout.php">Logout</a></li>
+                    </ul>
+                </div>
+            <?php else : ?>
+                <!-- Link Login -->
+                <a class="nav-item nav-link text-dark" href="login.php">Login</a>
+            <?php endif; ?>
         </div>
     </nav>

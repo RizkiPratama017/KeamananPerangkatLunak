@@ -156,3 +156,34 @@ if (!function_exists('RiwayatPostUser')) {
         return $revisions;
     }
 }
+
+if (!function_exists('editPost')) {
+    function editPost($id_post, $title, $content, $keywords, $file)
+    {
+        $conn = koneksi();
+
+        // Ambil data post sebelumnya
+        $post = query("SELECT * FROM posts WHERE id = '$id_post'");
+        if (!$post) {
+            return false;
+        }
+        $post = $post[0];
+
+        // Gunakan gambar lama jika tidak ada yang diunggah
+        $image = $post['image'];
+        if (!empty($file['image']['name'])) {
+            $image_name = basename($file['image']['name']);
+            $image_path = '../img/' . $image_name;
+            move_uploaded_file($file['image']['tmp_name'], $image_path);
+            $image = $image_name;
+        }
+
+        // Update data di database
+        $update_query = "UPDATE posts SET title='$title', content='$content', keywords='$keywords', image='$image' WHERE id='$id_post'";
+        mysqli_query($conn, $update_query) or die(mysqli_error($conn));
+
+        return mysqli_affected_rows($conn);
+    }
+}
+
+

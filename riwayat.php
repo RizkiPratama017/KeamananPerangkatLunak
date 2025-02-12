@@ -37,6 +37,7 @@ $revisions = RiwayatPostUser($id_user);
                                     <th>Gambar</th>
                                     <th>Revisi Pada</th>
                                     <th>Status</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -63,6 +64,13 @@ $revisions = RiwayatPostUser($id_user);
                                                 <?php endif; ?>
                                             <?php else: ?>
                                                 <span class="badge bg-secondary">Tidak diketahui</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <?php if (isset($rev['is_published']) && $rev['is_published'] == 0): ?>
+                                                <a href="post/kembali.php?id=<?= $rev['post_id']; ?>" class="btn btn-primary btn-sm" onclick="return confirm('Apakah Anda yakin ingin mengembalikan post ini?');">
+                                                    Kembalikan
+                                                </a>
                                             <?php endif; ?>
                                         </td>
                                     </tr>

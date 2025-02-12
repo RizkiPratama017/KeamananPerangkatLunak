@@ -169,6 +169,12 @@ if (!function_exists('editPost')) {
         }
         $post = $post[0];
 
+        //simpan ke tabel post_revision
+        $insert_revision = "INSERT INTO post_revisions (post_id, title, content, image, updated_at) 
+                            VALUES ('$id_post', '{$post['title']}', '{$post['content']}', '{$post['image']}', NOW())";
+        mysqli_query($conn, $insert_revision) or die(mysqli_error($conn));
+
+
         // Gunakan gambar lama jika tidak ada yang diunggah
         $image = $post['image'];
         if (!empty($file['image']['name'])) {
@@ -186,30 +192,58 @@ if (!function_exists('editPost')) {
     }
 }
 
-
-function hapus($id_post) {
+// hapus post
+function hapus($id_post)
+{
     $conn = koneksi();
     $post = query("SELECT * FROM posts WHERE id = '$id_post'");
     if (!$post) {
-        return false; 
+        return false;
     }
     $post = $post[0];
 
     // Simpan ke tabel post_revisions sebelum menghapus
-    $post_id = $post['id']; 
+    $post_id = $post['id'];
     $title = mysqli_real_escape_string($conn, $post['title']);
     $content = mysqli_real_escape_string($conn, $post['content']);
     $image = mysqli_real_escape_string($conn, $post['image']);
     $updated_at = date('Y-m-d H:i:s'); // Menyimpan waktu penghapusan
-    
+
     $query_insert = "INSERT INTO post_revisions (post_id, title, content, image, updated_at) 
                      VALUES ('$post_id', '$title', '$content', '$image', '$updated_at')";
     mysqli_query($conn, $query_insert) or die(mysqli_error($conn));
-    
-    $query_delete = "DELETE FROM posts WHERE id = '$id_post'";
+
+    $query_delete = "UPDATE posts SET is_published = '0' WHERE id = '$id_post'";
     mysqli_query($conn, $query_delete) or die(mysqli_error($conn));
 
     return mysqli_affected_rows($conn);
 }
 
+function kembali($id_post)
+{
+    $conn = koneksi();
 
+    // Ambil data post sebelum perubahan
+    $post = query("SELECT * FROM posts WHERE id = '$id_post'");
+    if (!$post) {
+        return false;
+    }
+    $post = $post[0];
+
+    // Simpan data lama ke tabel post_revisions sebelum mengubah status
+    $post_id = $post['id'];
+    $title = mysqli_real_escape_string($conn, $post['title']);
+    $content = mysqli_real_escape_string($conn, $post['content']);
+    $image = mysqli_real_escape_string($conn, $post['image']);
+    $updated_at = date('Y-m-d H:i:s'); // Menyimpan waktu perubahan status
+
+    $query_insert = "INSERT INTO post_revisions (post_id, title, content, image, updated_at) 
+                     VALUES ('$post_id', '$title', '$content', '$image', '$updated_at')";
+    mysqli_query($conn, $query_insert) or die(mysqli_error($conn));
+
+    // ubah is_published jadi true
+    $query_kembali = "UPDATE posts SET is_published = '1' WHERE id = '$id_post'";
+    mysqli_query($conn, $query_kembali) or die(mysqli_error($conn));
+
+    return mysqli_affected_rows($conn);
+}

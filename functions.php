@@ -187,3 +187,29 @@ if (!function_exists('editPost')) {
 }
 
 
+function hapus($id_post) {
+    $conn = koneksi();
+    $post = query("SELECT * FROM posts WHERE id = '$id_post'");
+    if (!$post) {
+        return false; 
+    }
+    $post = $post[0];
+
+    // Simpan ke tabel post_revisions sebelum menghapus
+    $post_id = $post['id']; 
+    $title = mysqli_real_escape_string($conn, $post['title']);
+    $content = mysqli_real_escape_string($conn, $post['content']);
+    $image = mysqli_real_escape_string($conn, $post['image']);
+    $updated_at = date('Y-m-d H:i:s'); // Menyimpan waktu penghapusan
+    
+    $query_insert = "INSERT INTO post_revisions (post_id, title, content, image, updated_at) 
+                     VALUES ('$post_id', '$title', '$content', '$image', '$updated_at')";
+    mysqli_query($conn, $query_insert) or die(mysqli_error($conn));
+    
+    $query_delete = "DELETE FROM posts WHERE id = '$id_post'";
+    mysqli_query($conn, $query_delete) or die(mysqli_error($conn));
+
+    return mysqli_affected_rows($conn);
+}
+
+

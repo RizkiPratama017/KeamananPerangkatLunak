@@ -3,18 +3,11 @@ session_start(); // Mulai sesi
 
 require_once 'functions.php';
 
-// Cek apakah pengguna telah login dan sesi sudah diatur
-if (!isset($_SESSION['username'])) {
-    die("Pengguna belum login. Harap login terlebih dahulu.");
-}
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Cek apakah data komentar dan post_id telah diterima
     if (isset($_POST['comment'], $_POST['post_id']) && !empty($_POST['comment']) && !empty($_POST['post_id'])) {
         $comment = $_POST['comment'];
         $post_id = $_POST['post_id'];
-        $id_user = $_SESSION['id_user']; // Pastikan sesi user sudah diatur
-        $username = $_SESSION['username']; // Pastikan sesi user sudah diatur
 
         // Koneksi ke database
         $conn = koneksi();
@@ -28,6 +21,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($result_check->num_rows === 0) {
             die("post_id tidak valid: " . htmlspecialchars($post_id));
+        }
+
+        // Jika pengguna login
+        if (isset($_SESSION['username'])) {
+            $id_user = $_SESSION['id_user'];
+            $username = $_SESSION['username'];
+        } else { // Jika pengguna anonim
+            $id_user = null; // Atur id_user menjadi null
+            $username = 'Anonim'; // Gunakan nama "Anonim"
         }
 
         // Query untuk memasukkan data komentar

@@ -5,7 +5,6 @@ require_once '../functions.php';
 $judul = "Tambah";
 require_once '../partials/header.php';
 
-
 if (!isset($_SESSION['id_user'])) {
     echo "<script>
         alert('Silakan login terlebih dahulu.');
@@ -13,7 +12,6 @@ if (!isset($_SESSION['id_user'])) {
     </script>";
     exit;
 }
-
 
 if (isset($_POST["tambah"])) {
     $title = $_POST['title'];
@@ -49,6 +47,10 @@ if (isset($_POST["tambah"])) {
 }
 ?>
 
+<!-- Tambahkan Trix Editor -->
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/trix/2.0.0/trix.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/trix/2.0.0/trix.umd.min.js"></script>
+
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
@@ -65,7 +67,8 @@ if (isset($_POST["tambah"])) {
 
                         <div class="mb-3">
                             <label for="content" class="form-label">Konten:</label>
-                            <textarea name="content" id="content" class="form-control" rows="5" placeholder="Tulis konten di sini..." required></textarea>
+                            <input id="content" type="hidden" name="content">
+                            <trix-editor input="content"></trix-editor>
                         </div>
 
                         <div class="mb-3">

@@ -43,7 +43,8 @@ require_once '../partials/header.php' ?>
 
                         <div class="mb-3">
                             <label for="content" class="form-label">Konten:</label>
-                            <textarea name="content" id="content" class="form-control" rows="5" required><?= htmlspecialchars($post['content']) ?></textarea>
+                            <input id="content" type="hidden" name="content" value="<?= $post['content'] ?>">
+                            <trix-editor input="content"></trix-editor>
                         </div>
 
                         <div class="mb-3">

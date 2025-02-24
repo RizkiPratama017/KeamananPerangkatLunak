@@ -48,7 +48,7 @@ require_once 'partials/header.php';
             <p class="card-text"><?= htmlspecialchars($post['username']); ?> | <?= htmlspecialchars($post['created_at']); ?></p>
             <p class="card-text">Keyword : <?= htmlspecialchars($post['keywords']); ?></p>
             <h5 class="card-title"><?= htmlspecialchars($post['title']); ?></h5>
-            <p class="card-text"><?= nl2br(htmlspecialchars($post['content'])); ?></p>
+            <p class="card-text"><?= nl2br($post['content']); ?></p>
         </div>
     </div>
 </div>
@@ -74,7 +74,7 @@ require_once 'partials/header.php';
     <form method="POST" action="comment.php">
         <div class="mb-3">
             <textarea class="form-control" name="comment" placeholder="Tambahkan Komentar...." required></textarea>
-            <input type="hidden" value="<?php echo htmlspecialchars($post['id']); ?>" name="post_id"/>
+            <input type="hidden" value="<?php echo htmlspecialchars($post['id']); ?>" name="post_id" />
         </div>
         <div class="text-end">
             <button class="btn btn-primary" type="submit">Kirim</button>

@@ -29,7 +29,7 @@ $nama = "John Doe";
                     <a href="post.php?id=<?= htmlspecialchars($post['id']); ?>" class="text-decoration-none">
                         <h4><?= htmlspecialchars($post['title']); ?></h4>
                     </a>
-                    <p><?= nl2br(htmlspecialchars($post['content'])); ?></p>
+                    <p><?= nl2br($post['content']); ?></p>
                     <small>By <?= htmlspecialchars($post['author']); ?> | <?= htmlspecialchars($post['created_at']); ?></small>
                 </li>
             <?php endif; ?>

@@ -11,11 +11,11 @@ if (!isset($_SESSION['id_user'])) {
     exit;
 }
 
-// Ambil post berdasarkan user yang login
+
 $id_user = $_SESSION['id_user'];
 $posts = PostsUser($id_user);
 
-$judul = $_SESSION['username'];
+$judul = htmlspecialchars($_SESSION['username']);
 require_once 'partials/header.php';
 ?>
 
@@ -24,8 +24,8 @@ require_once 'partials/header.php';
         <div class="col-md-8">
             <div class="card shadow">
                 <div class="card-body text-center">
-                    <h1 class="card-title">Halaman Admin</h1>
-                    <p class="card-text">Selamat datang, <strong><?= $_SESSION['username']; ?></strong></p>
+                    <h1 class="card-title">Halaman Admin <?= $_SESSION['username']; ?></h1>
+                    <p class="card-text">Selamat datang, <strong><?= htmlspecialchars($_SESSION['username']); ?></strong></p>
                     <div class="d-flex justify-content-center gap-3">
                         <a href="post/tambah.php" class="btn btn-primary">Tambah Post</a>
                         <a href="riwayat.php" class="btn btn-success">Riwayat Post</a>
@@ -37,23 +37,27 @@ require_once 'partials/header.php';
             <!-- List Post -->
             <div class="mt-4">
                 <h2>Post Anda</h2>
-                <?php if (count($posts) > 0): ?>
+                <?php if ($posts && count($posts) > 0): ?>
                     <?php foreach ($posts as $post): ?>
                         <div class="card mt-3">
                             <div class="card-body">
                                 <h5 class="card-title"><?= htmlspecialchars($post['title']); ?></h5>
-                                <p class="card-text"><?= nl2br(htmlspecialchars($post['content'])); ?></p>
-                                <small class="text-muted">Dibuat pada: <?= $post['created_at']; ?></small>
+                                <p class="card-text"><?= $post['content']; ?></p>
+                                <small class="text-muted">Dibuat pada: <?= htmlspecialchars($post['created_at']); ?></small>
                             </div>
                             <?php if ($post['is_published'] == 1): ?>
                                 <div class="d-inline-flex ms-3 mb-3">
                                     <a href="post/edit.php?id=<?= htmlspecialchars($post['id']); ?>" class="btn btn-warning btn-sm me-2">
                                         Edit
                                     </a>
-                                    <a href="post/hapus.php?id=<?= htmlspecialchars($post['id']); ?>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus post ini?');">
+                                    <a href="post/hapus.php?id=<?= htmlspecialchars($post['id']); ?>"
+                                        class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Apakah Anda yakin ingin menghapus post ini?');">
                                         Hapus
                                     </a>
                                 </div>
+                            <?php else: ?>
+                                <div class="d-inline-flex ms-3 mb-3 text-danger">Postingan dihapus</div>
                             <?php endif; ?>
                         </div>
                     <?php endforeach; ?>

@@ -1,6 +1,5 @@
 <?php
-session_start(); // Mulai sesi
-
+session_start();
 require_once 'functions.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -9,54 +8,52 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $comment = $_POST['comment'];
         $post_id = $_POST['post_id'];
 
-        // Koneksi ke database
-        $conn = koneksi();
+        try {
+            // Koneksi ke database
+            $pdo = koneksi();
 
-        // Periksa nilai post_id
-        $sql_check = "SELECT id FROM posts WHERE id = ?";
-        $stmt_check = $conn->prepare($sql_check);
-        $stmt_check->bind_param("i", $post_id);
-        $stmt_check->execute();
-        $result_check = $stmt_check->get_result();
+            // Periksa nilai post_id
+            $stmt_check = $pdo->prepare("SELECT id FROM posts WHERE id = :post_id");
+            $stmt_check->execute(['post_id' => $post_id]);
 
-        if ($result_check->num_rows === 0) {
-            die("post_id tidak valid: " . htmlspecialchars($post_id));
+            if (!$stmt_check->fetch(PDO::FETCH_ASSOC)) {
+                die("post_id tidak valid: " . htmlspecialchars($post_id));
+            }
+
+            // Set nilai user berdasarkan status login
+            if (isset($_SESSION['username'])) {
+                $id_user = $_SESSION['id_user'];
+                $username = $_SESSION['username'];
+            } else {
+                $id_user = null;
+                $username = 'Anonim';
+            }
+
+            // Query untuk memasukkan data komentar
+            $stmt = $pdo->prepare("INSERT INTO comments (post_id, id_user, username, comment, created_at) 
+                                 VALUES (:post_id, :id_user, :username, :comment, NOW())");
+
+            // Execute dengan named parameters
+            $success = $stmt->execute([
+                'post_id' => $post_id,
+                'id_user' => $id_user,
+                'username' => $username,
+                'comment' => $comment
+            ]);
+
+            if ($success) {
+                header("Location: post.php?id=" . htmlspecialchars($post_id));
+                exit;
+            } else {
+                throw new PDOException("Gagal menyimpan komentar");
+            }
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            die("Terjadi kesalahan dalam memproses komentar.");
         }
-
-        // Jika pengguna login
-        if (isset($_SESSION['username'])) {
-            $id_user = $_SESSION['id_user'];
-            $username = $_SESSION['username'];
-        } else { // Jika pengguna anonim
-            $id_user = null; // Atur id_user menjadi null
-            $username = 'Anonim'; // Gunakan nama "Anonim"
-        }
-
-        // Query untuk memasukkan data komentar
-        $sql = "INSERT INTO comments (post_id, id_user, username, comment, created_at) VALUES (?, ?, ?, ?, now())";
-        $stmt = $conn->prepare($sql);
-
-        // Bind parameter
-        $stmt->bind_param("iiss", $post_id, $id_user, $username, $comment);
-
-        // Eksekusi query
-        if ($stmt->execute()) {
-            // Redirect ke halaman postingan
-            header("Location: post.php?id=" . htmlspecialchars($post_id));
-            exit;
-        } else {
-            echo "Error: " . $stmt->error;
-        }
-
-        // Tutup statement
-        $stmt->close();
     } else {
-        echo "Data komentar atau post_id tidak valid.";
+        die("Data komentar atau post_id tidak valid.");
     }
 } else {
-    echo "Request tidak valid.";
+    die("Request tidak valid.");
 }
-
-// Tutup koneksi
-$conn->close();
-?>

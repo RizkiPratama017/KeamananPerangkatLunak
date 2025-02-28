@@ -8,33 +8,30 @@ if (!isset($_GET['id'])) {
 }
 
 $id_post = $_GET['id'];
+$pdo = koneksi();
 
+// Query untuk mengambil post
 $query = "SELECT p.*, u.username 
           FROM posts p
           INNER JOIN users u ON p.id_user = u.id
-          WHERE p.id = ? AND p.is_published = 1";
+          WHERE p.id = :id AND p.is_published = 1";
 
-$conn = koneksi();
-$stmt = $conn->prepare($query);
-$stmt->bind_param("i", $id_post);
-$stmt->execute();
-$result = $stmt->get_result();
+$stmt = $pdo->prepare($query);
+$stmt->execute(['id' => $id_post]);
+$post = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if ($result->num_rows === 0) {
+if (!$post) {
     echo "Postingan tidak ditemukan atau belum dipublikasikan.";
     exit;
 }
 
-$post = $result->fetch_assoc();
 $judul = $post['title'];
 
 // Ambil komentar dari database
-$query_comments = "SELECT * FROM comments WHERE post_id = ? ORDER BY created_at DESC";
-$stmt_comments = $conn->prepare($query_comments);
-$stmt_comments->bind_param("i", $id_post);
-$stmt_comments->execute();
-$result_comments = $stmt_comments->get_result();
-$comments = $result_comments->fetch_all(MYSQLI_ASSOC);
+$query_comments = "SELECT * FROM comments WHERE post_id = :post_id ORDER BY created_at DESC";
+$stmt_comments = $pdo->prepare($query_comments);
+$stmt_comments->execute(['post_id' => $id_post]);
+$comments = $stmt_comments->fetchAll(PDO::FETCH_ASSOC);
 
 require_once 'partials/header.php';
 ?>
@@ -48,7 +45,7 @@ require_once 'partials/header.php';
             <p class="card-text"><?= htmlspecialchars($post['username']); ?> | <?= htmlspecialchars($post['created_at']); ?></p>
             <p class="card-text">Keyword : <?= htmlspecialchars($post['keywords']); ?></p>
             <h5 class="card-title"><?= htmlspecialchars($post['title']); ?></h5>
-            <p class="card-text"><?= nl2br($post['content']); ?></p>
+            <p class="card-text"><?= $post['content']; ?></p>
         </div>
     </div>
 </div>
@@ -74,14 +71,12 @@ require_once 'partials/header.php';
     <form method="POST" action="comment.php">
         <div class="mb-3">
             <textarea class="form-control" name="comment" placeholder="Tambahkan Komentar...." required></textarea>
-            <input type="hidden" value="<?php echo htmlspecialchars($post['id']); ?>" name="post_id" />
+            <input type="hidden" value="<?= htmlspecialchars($post['id']); ?>" name="post_id" />
         </div>
         <div class="text-end">
             <button class="btn btn-primary" type="submit">Kirim</button>
         </div>
     </form>
 </div>
-
-
 
 <?php require_once 'partials/footer.php'; ?>

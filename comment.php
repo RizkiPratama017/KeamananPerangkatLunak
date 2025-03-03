@@ -8,6 +8,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $comment = $_POST['comment'];
         $post_id = $_POST['post_id'];
 
+        if (!is_numeric($post_id)) {
+            die("ID post tidak valid.");
+        }
+        
         try {
             // Koneksi ke database
             $pdo = koneksi();

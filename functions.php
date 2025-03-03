@@ -2,6 +2,14 @@
 
 define('BASE_URL', '/KeamananPerangkatLunak/');
 
+function validateGetInt($param, $redirect = 'index.php') {
+    if (!isset($_GET[$param]) || !filter_var($_GET[$param], FILTER_VALIDATE_INT)) {
+        header("Location: $redirect");
+        exit;
+    }
+    return (int) $_GET[$param];
+}
+
 // Koneksi ke DB
 if (!function_exists('koneksi')) {
     function koneksi()

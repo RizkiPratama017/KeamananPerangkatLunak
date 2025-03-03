@@ -2,12 +2,7 @@
 session_start();
 require_once 'functions.php';
 
-if (!isset($_GET['id'])) {
-    echo "ID tidak ditemukan di URL.";
-    exit;
-}
-
-$id_post = $_GET['id'];
+$id_post = validateGetInt('id', 'index.php'); // Validasi ID
 $pdo = koneksi();
 
 // Query untuk mengambil post

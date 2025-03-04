@@ -1,7 +1,11 @@
 <?php
 session_start();
-
 require_once 'functions.php';
+
+// Generate CSRF token
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 
 // cek session
 if (isset($_SESSION['username'])) {
@@ -11,17 +15,39 @@ if (isset($_SESSION['username'])) {
 
 // alert user 
 if (isset($_POST["register"])) {
-    if (register($_POST) > 0) {
-        echo "<script>
-                alert('User baru berhasil ditambahkan!');
-              <script>";
-        header('Location: login.php');
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        echo "<script>alert('Token CSRF tidak valid!');</script>";
         exit;
+    }
+
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+    $password2 = $_POST['password2'];
+
+    // Validasi input
+    if (empty($username) || empty($password) || empty($password2)) {
+        echo "<script>alert('Semua field harus diisi!');</script>";
+    } elseif ($password !== $password2) {
+        echo "<script>alert('Konfirmasi password tidak cocok!');</script>";
+    } elseif (strlen($username) < 5) {
+        echo "<script>alert('Username harus terdiri dari minimal 5 karakter!');</script>";
+    } elseif (strlen($password) < 6) {
+        echo "<script>alert('Password harus terdiri dari minimal 6 karakter!');</script>";
+    } elseif (!preg_match("/^[a-zA-Z0-9_]*$/", $username)) {
+        echo "<script>alert('Username hanya boleh mengandung huruf, angka, dan underscore, tanpa karakter spesial!');</script>";
     } else {
-        echo "<script>alert('Registrasi gagal!');</script>";
+        // Jika validasi berhasil, lanjutkan ke proses registrasi
+        if (register($_POST) > 0) {
+            echo "<script>
+                    alert('User baru berhasil ditambahkan!');
+                  </script>";
+            header('Location: login.php');
+            exit;
+        } else {
+            echo "<script>alert('Registrasi gagal!');</script>";
+        }
     }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -51,6 +77,7 @@ if (isset($_POST["register"])) {
                             <div class="card-body">
                                 <h2 class="text-center">DAFTAR</h2>
                                 <form action="" method="post" autocomplete="off">
+                                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                                     <div class="mb-3">
                                         <label for="username" class="form-label">Username</label>
                                         <input type="text" class="form-control" id="username" name="username" required>

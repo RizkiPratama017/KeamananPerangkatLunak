@@ -1,7 +1,11 @@
 <?php
 session_start();
-
 require_once 'functions.php';
+
+// Generate CSRF token
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 
 $pdo = koneksi();
 
@@ -11,30 +15,39 @@ if (isset($_SESSION['username'])) {
 }
 
 if (isset($_POST["login"])) {
+    // Validasi CSRF token
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        echo "<script>alert('Token CSRF tidak valid!');</script>";
+        exit;
+    }
+
     $username = $_POST["username"];
     $password = $_POST["password"];
 
-
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
-    $stmt->execute(['username' => $username]);
-
-
-    if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-
-        if (password_verify($password, $row["password"])) {
-            $_SESSION['id_user'] = $row["id"];
-            $_SESSION['username'] = $row["username"];
-            $_SESSION['login'] = true;
-            header('location:index.php');
-            exit;
-        } else {
-            $error = "Password salah!";
-        }
+    // Validasi input
+    if (empty($username) || empty($password)) {
+        $error = "Username dan Password harus diisi!";
+    } elseif (!preg_match("/^[a-zA-Z0-9_]*$/", $username)) {
+        $error = "Username hanya boleh mengandung huruf, angka, dan underscore!";
     } else {
-        $error = "Username tidak ditemukan!";
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
+        $stmt->execute(['username' => $username]);
+
+        if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            if (password_verify($password, $row["password"])) {
+                $_SESSION['id_user'] = $row["id"];
+                $_SESSION['username'] = $row["username"];
+                $_SESSION['login'] = true;
+                header('location:index.php');
+                exit;
+            } else {
+                $error = "Password salah!";
+            }
+        } else {
+            $error = "Username tidak ditemukan!";
+        }
     }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -66,11 +79,12 @@ if (isset($_POST["login"])) {
                                 <!-- Error -->
                                 <?php if (isset($error)) : ?>
                                     <div class="alert alert-danger" role="alert" id="alert">
-                                        Username atau Password salah!
+                                        <?php echo $error; ?>
                                     </div>
                                 <?php endif; ?>
 
                                 <form action="" method="post" autocomplete="off">
+                                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                                     <div class="mb-3">
                                         <label for="username" class="form-label">Username</label>
                                         <input type="text" class="form-control" id="username" name="username" required>

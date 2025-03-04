@@ -2,6 +2,12 @@
 session_start();
 require_once 'functions.php';
 
+
+// Generate CSRF token
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 $id_post = validateGetInt('id', 'index.php'); // Validasi ID
 $pdo = koneksi();
 
@@ -30,6 +36,19 @@ $comments = $stmt_comments->fetchAll(PDO::FETCH_ASSOC);
 
 require_once 'partials/header.php';
 ?>
+
+<?php if (isset($_SESSION['error_message'])): ?>
+    <div class="alert alert-danger" role="alert">
+        <?= $_SESSION['error_message']; unset($_SESSION['error_message']); ?>
+    </div>
+<?php endif; ?>
+
+<?php if (isset($_SESSION['success_message'])): ?>
+    <div class="alert alert-success" role="alert">
+        <?= $_SESSION['success_message']; unset($_SESSION['success_message']); ?>
+    </div>
+<?php endif; ?>
+
 
 <div class="container mt-5">
     <div class="card mx-auto" style="max-width: 800px;">
@@ -64,6 +83,7 @@ require_once 'partials/header.php';
 
 <div class="col mt-4">
     <form method="POST" action="comment.php">
+        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
         <div class="mb-3">
             <textarea class="form-control" name="comment" placeholder="Tambahkan Komentar...." required></textarea>
             <input type="hidden" value="<?= htmlspecialchars($post['id']); ?>" name="post_id" />

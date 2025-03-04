@@ -10,15 +10,15 @@ if (!isset($_SESSION['id_user'])) {
     exit;
 }
 
-if (!isset($_GET['id']) || empty($_GET['id'])) {
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) { 
     echo "<script>
-        alert('ID post tidak ditemukan.');
+        alert('ID post tidak valid.');
         window.location.href = '../riwayat.php';
     </script>";
     exit;
 }
 
-$id_post = $_GET['id'];
+$id_post = (int) $_GET['id'];
 
 if (kembali($id_post) > 0) {
     echo "<script>

@@ -2,7 +2,7 @@
 session_start();
 require_once '../functions.php';
 
-$id_post = $_GET['id'];
+$id_post = validateGetInt('id', BASE_URL . 'admin.php');
 $query = "SELECT * FROM posts WHERE id = '$id_post'";
 $post = query($query);
 $judul = "Edit Post";

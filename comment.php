@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once 'functions.php';
+require_once 'logger.php'; 
 
 // Generate CSRF token
 if (empty($_SESSION['csrf_token'])) {
@@ -10,49 +11,48 @@ if (empty($_SESSION['csrf_token'])) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Validasi CSRF token
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        logError("Komentar gagal: Token CSRF tidak valid.");
         $_SESSION['error_message'] = "Token CSRF tidak valid.";
         header("Location: post.php?id=" . htmlspecialchars($_POST['post_id']));
         exit;
     }
 
-    // Cek apakah data komentar dan post_id telah diterima
     if (isset($_POST['comment'], $_POST['post_id']) && !empty($_POST['comment']) && !empty($_POST['post_id'])) {
         $comment = $_POST['comment'];
         $post_id = $_POST['post_id'];
 
-        // Validasi post_id
         if (!is_numeric($post_id)) {
+            logError("Komentar gagal: post_id '$post_id' tidak valid.");
             $_SESSION['error_message'] = "ID post tidak valid.";
             header("Location: post.php?id=" . htmlspecialchars($post_id));
             exit;
         }
 
-        // Validasi input komentar
         if (strlen($comment) > 500) {
+            logError("Komentar gagal: komentar melebihi 500 karakter.");
             $_SESSION['error_message'] = "Komentar tidak boleh lebih dari 500 karakter.";
             header("Location: post.php?id=" . htmlspecialchars($post_id));
             exit;
         } elseif (!preg_match("/^[a-zA-Z0-9\s.,!?]*$/", $comment)) {
+            logError("Komentar gagal: komentar mengandung karakter tidak valid.");
             $_SESSION['error_message'] = "Komentar hanya boleh mengandung huruf, angka, spasi, dan tanda baca tertentu.";
             header("Location: post.php?id=" . htmlspecialchars($post_id));
             exit;
         }
 
         try {
-            // Koneksi ke database
             $pdo = koneksi();
 
-            // Periksa nilai post_id
             $stmt_check = $pdo->prepare("SELECT id FROM posts WHERE id = :post_id");
             $stmt_check->execute(['post_id' => $post_id]);
 
             if (!$stmt_check->fetch(PDO::FETCH_ASSOC)) {
+                logError("Komentar gagal: post_id '$post_id' tidak ditemukan di database.");
                 $_SESSION['error_message'] = "post_id tidak valid.";
                 header("Location: post.php?id=" . htmlspecialchars($post_id));
                 exit;
             }
 
-            // Set nilai user berdasarkan status login
             if (isset($_SESSION['username'])) {
                 $id_user = $_SESSION['id_user'];
                 $username = $_SESSION['username'];
@@ -61,11 +61,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $username = 'Anonim';
             }
 
-            // Query untuk memasukkan data komentar
             $stmt = $pdo->prepare("INSERT INTO comments (post_id, id_user, username, comment, created_at) 
                                  VALUES (:post_id, :id_user, :username, :comment, NOW())");
 
-            // Execute dengan named parameters
             $success = $stmt->execute([
                 'post_id' => $post_id,
                 'id_user' => $id_user,
@@ -74,6 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             ]);
 
             if ($success) {
+                logActivity("Komentar berhasil oleh '$username' di post_id '$post_id'.");
                 $_SESSION['success_message'] = "Komentar berhasil ditambahkan!";
                 header("Location: post.php?id=" . htmlspecialchars($post_id));
                 exit;
@@ -81,22 +80,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 throw new PDOException("Gagal menyimpan komentar.");
             }
         } catch (PDOException $e) {
-            error_log($e->getMessage());
+            logError("Komentar gagal: " . $e->getMessage());
             $_SESSION['error_message'] = "Terjadi kesalahan dalam memproses komentar.";
             header("Location: post.php?id=" . htmlspecialchars($post_id));
             exit;
         }
     } else {
+        logError("Komentar gagal: Data 'comment' atau 'post_id' kosong atau tidak valid.");
         $_SESSION['error_message'] = "Data komentar atau post_id tidak valid.";
         header("Location: post.php?id=" . htmlspecialchars($_POST['post_id']));
         exit;
     }
 } else {
+    logError("Komentar gagal: Request bukan POST.");
     $_SESSION['error_message'] = "Request tidak valid.";
     header("Location: index.php");
     exit;
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

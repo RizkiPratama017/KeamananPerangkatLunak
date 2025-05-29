@@ -1,13 +1,17 @@
 <?php
 session_start();
 require_once '../functions.php';
+require_once '../logger.php'; 
 
 $id_post = validateGetInt('id', BASE_URL . 'admin.php');
 $query = "SELECT * FROM posts WHERE id = '$id_post'";
 $post = query($query);
 $judul = "Edit Post";
 
+$username = $_SESSION['username'] ?? 'Unknown';
+
 if (!$post) {
+    logError("User '$username' mencoba mengedit post yang tidak ditemukan. ID: $id_post");
     echo "<script>alert('Post tidak ditemukan!'); window.location.href='" . BASE_URL . "admin.php';</script>";
     exit;
 }
@@ -20,14 +24,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $keywords = $_POST['keywords'];
 
     if (editPost($id_post, $title, $content, $keywords, $_FILES)) {
+        logActivity("User '$username' berhasil mengedit post dengan ID $id_post.");
         echo "<script>alert('Post berhasil diperbarui!'); window.location.href='" . BASE_URL . "admin.php';</script>";
     } else {
+        logError("User '$username' gagal mengedit post dengan ID $id_post.");
         echo "<script>alert('Terjadi kesalahan!'); window.location.href='" . BASE_URL . "admin.php';</script>";
     }
     exit;
 }
 
-require_once '../partials/header.php' ?>
+require_once '../partials/header.php'
+?>
+
 
 <div class="container mt-5">
     <div class="row justify-content-center">

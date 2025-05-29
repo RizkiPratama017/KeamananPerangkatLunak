@@ -22,6 +22,19 @@ if (isset($_POST["register"])) {
         exit;
     }
 
+        $captchaSecret = '6LcKlE4rAAAAAJE1BiW3l60SIghzFOOxECw8q4V_';
+        $captchaResponse = $_POST['g-recaptcha-response'] ?? '';
+
+        $verifyResponse = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$captchaSecret}&response={$captchaResponse}");
+        $responseData = json_decode($verifyResponse);
+
+    if (!$responseData || !$responseData->success) {
+        $error = "Verifikasi CAPTCHA gagal. Coba lagi.";
+        logError("Register gagal: CAPTCHA tidak lolos.");
+        return;
+    }
+
+
     $username = $_POST['username'];
     $password = $_POST['password'];
     $password2 = $_POST['password2'];
@@ -69,6 +82,7 @@ if (isset($_POST["register"])) {
     <title>DAFTAR</title>
     <!-- Bootstrap CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 
 <body style="background-color: #eaeaea;">
@@ -99,6 +113,8 @@ if (isset($_POST["register"])) {
                                         <label for="password2" class="form-label">Confirm Password</label>
                                         <input type="password" class="form-control" id="password2" name="password2" required>
                                     </div>
+                                    <div class="g-recaptcha" data-sitekey="6LcKlE4rAAAAAIGBNH8hSMuqfYATAZmMs5dD07eW"></div>
+                                    <br>
                                     <button type="submit" name="register" class="btn btn-success w-100">Daftar</button>
                                 </form>
                                 <hr>
@@ -112,7 +128,29 @@ if (isset($_POST["register"])) {
     </div>
 
     <!-- Bootstrap 5 JS -->
+
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showPass() {
+            var x = document.getElementById("password");
+            x.type = x.type === "password" ? "text" : "password";
+        }
+
+        function validateCaptcha(event) {
+            const response = grecaptcha.getResponse();
+            if (response.length === 0) {
+            alert("Silakan centang CAPTCHA dulu.");
+            event.preventDefault(); // Cegah form submit
+            }
+        }
+
+        // Tambah listener saat DOM siap
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.querySelector("form");
+            form.addEventListener("submit", validateCaptcha);
+        });
+    </script>
 </body>
 
 </html>

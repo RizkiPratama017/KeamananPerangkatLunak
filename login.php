@@ -3,6 +3,8 @@ session_start();
 require_once 'functions.php';
 require_once 'logger.php';
 
+
+
 // Generate CSRF token
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -22,6 +24,19 @@ if (isset($_POST["login"])) {
         echo "<script>alert('Token CSRF tidak valid!');</script>";
         exit;
     }
+        // Verifikasi Google reCAPTCHA
+    $captchaSecret = '6LcKlE4rAAAAAJE1BiW3l60SIghzFOOxECw8q4V_'; // Ganti dengan SECRET key kamu
+    $captchaResponse = $_POST['g-recaptcha-response'] ?? '';
+
+    $verifyResponse = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$captchaSecret}&response={$captchaResponse}");
+    $responseData = json_decode($verifyResponse);
+
+    if (!$responseData || !$responseData->success) {
+        $error = "Verifikasi CAPTCHA gagal. Coba lagi.";
+        logError("Login gagal: CAPTCHA tidak lolos.");
+        exit;
+    }
+
 
     $username = $_POST["username"];
     $password = $_POST["password"];
@@ -67,9 +82,15 @@ if (isset($_POST["login"])) {
     <title>MASUK</title>
     <!-- Bootstrap CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 
 <body style="background-color: #eaeaea;">
+    <?php
+    if (empty($error) == false) {
+        echo $error;
+    }
+    ?>
     <div class="container">
         <div class="row justify-content-center align-items-center vh-100">
             <div class="col-md-8">
@@ -104,8 +125,11 @@ if (isset($_POST["login"])) {
                                         <input type="checkbox" class="form-check-input" id="showpass" onclick="showPass()">
                                         <label class="form-check-label" for="showpass">Show password</label>
                                     </div>
+                                    <div class="g-recaptcha" data-sitekey="6LcKlE4rAAAAAIGBNH8hSMuqfYATAZmMs5dD07eW"></div>
+                                    <br>
                                     <button type="submit" class="btn btn-success w-100" name="login">Masuk</button>
                                 </form>
+                                
                                 <hr>
                                 <p class="text-center mb-2">Belum punya akun? <a href="register.php" class="text-decoration-none">Daftar</a></p>
                             </div>
@@ -124,6 +148,20 @@ if (isset($_POST["login"])) {
             var x = document.getElementById("password");
             x.type = x.type === "password" ? "text" : "password";
         }
+
+        function validateCaptcha(event) {
+            const response = grecaptcha.getResponse();
+            if (response.length === 0) {
+            alert("Silakan centang CAPTCHA dulu.");
+            event.preventDefault(); // Cegah form submit
+            }
+        }
+
+        // Tambah listener saat DOM siap
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.querySelector("form");
+            form.addEventListener("submit", validateCaptcha);
+        });
     </script>
 </body>
 

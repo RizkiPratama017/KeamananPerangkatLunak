@@ -2,10 +2,12 @@
 session_start();
 
 require_once '../functions.php';
+require_once '../logger.php';
 $judul = "Tambah";
 require_once '../partials/header.php';
 
 if (!isset($_SESSION['id_user'])) {
+    logError("Akses tambah post ditolak: pengguna belum login.");
     echo "<script>
         alert('Silakan login terlebih dahulu.');
         window.location.href = '../login.php';
@@ -28,17 +30,21 @@ if (isset($_POST["tambah"])) {
 
         if (move_uploaded_file($_FILES['image']['tmp_name'], $imagePath)) {
             $image = basename($_FILES['image']['name']);
+        } else {
+            logError("Gagal upload gambar oleh user '$username'.");
         }
     }
 
     // simpan ke database
     if (tambahpost($title, $content, $image, $keywords, $id_user, $created_at) > 0) {
+        logActivity("User '$username' berhasil menambahkan post dengan judul '$title'.");
         echo "<script>
             alert('Post berhasil ditambahkan');
             window.location.href = '../admin.php';
         </script>";
         exit;
     } else {
+        logError("User '$username' gagal menambahkan post dengan judul '$title'.");
         echo "<script>
             alert('Post gagal ditambahkan');
             window.location.href = 'tambah.php'; 

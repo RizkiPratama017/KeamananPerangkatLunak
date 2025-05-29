@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once 'functions.php';
+require_once 'logger.php';
 
 // Generate CSRF token
 if (empty($_SESSION['csrf_token'])) {
@@ -17,6 +18,7 @@ if (isset($_SESSION['username'])) {
 if (isset($_POST["login"])) {
     // Validasi CSRF token
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        logError("Percobaan login dengan token CSRF tidak valid.");
         echo "<script>alert('Token CSRF tidak valid!');</script>";
         exit;
     }
@@ -27,8 +29,10 @@ if (isset($_POST["login"])) {
     // Validasi input
     if (empty($username) || empty($password)) {
         $error = "Username dan Password harus diisi!";
+        logError("Login gagal: username/password kosong.");
     } elseif (!preg_match("/^[a-zA-Z0-9_]*$/", $username)) {
         $error = "Username hanya boleh mengandung huruf, angka, dan underscore!";
+        logError("Login gagal: username tidak valid: '$username'");
     } else {
         $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
         $stmt->execute(['username' => $username]);
@@ -38,13 +42,16 @@ if (isset($_POST["login"])) {
                 $_SESSION['id_user'] = $row["id"];
                 $_SESSION['username'] = $row["username"];
                 $_SESSION['login'] = true;
+                logActivity("User '$username' berhasil login.");
                 header('location:index.php');
                 exit;
             } else {
                 $error = "Password salah!";
+                logError("Login gagal: password salah untuk user '$username'.");
             }
         } else {
             $error = "Username tidak ditemukan!";
+            logError("Login gagal: username '$username' tidak ditemukan.");
         }
     }
 }

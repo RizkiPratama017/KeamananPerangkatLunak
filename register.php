@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once 'functions.php';
+require_once 'logger.php';
 
 // Generate CSRF token
 if (empty($_SESSION['csrf_token'])) {
@@ -16,6 +17,7 @@ if (isset($_SESSION['username'])) {
 // alert user 
 if (isset($_POST["register"])) {
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        logError("Registrasi gagal: CSRF token tidak valid.");
         echo "<script>alert('Token CSRF tidak valid!');</script>";
         exit;
     }
@@ -26,24 +28,31 @@ if (isset($_POST["register"])) {
 
     // Validasi input
     if (empty($username) || empty($password) || empty($password2)) {
+        logError("Registrasi gagal: Field kosong (username/password).");
         echo "<script>alert('Semua field harus diisi!');</script>";
     } elseif ($password !== $password2) {
+        logError("Registrasi gagal: Password tidak cocok untuk '$username'.");
         echo "<script>alert('Konfirmasi password tidak cocok!');</script>";
     } elseif (strlen($username) < 5) {
+        logError("Registrasi gagal: Username '$username' terlalu pendek.");
         echo "<script>alert('Username harus terdiri dari minimal 5 karakter!');</script>";
     } elseif (strlen($password) < 6) {
+        logError("Registrasi gagal: Password terlalu pendek untuk '$username'.");
         echo "<script>alert('Password harus terdiri dari minimal 6 karakter!');</script>";
     } elseif (!preg_match("/^[a-zA-Z0-9_]*$/", $username)) {
+        logError("Registrasi gagal: Username '$username' mengandung karakter tidak valid.");
         echo "<script>alert('Username hanya boleh mengandung huruf, angka, dan underscore, tanpa karakter spesial!');</script>";
     } else {
         // Jika validasi berhasil, lanjutkan ke proses registrasi
         if (register($_POST) > 0) {
+            logActivity("Registrasi berhasil untuk user '$username'.");
             echo "<script>
                     alert('User baru berhasil ditambahkan!');
                   </script>";
             header('Location: login.php');
             exit;
         } else {
+            logError("Registrasi gagal untuk user '$username' (username sudah terdaftar).");
             echo "<script>alert('Registrasi gagal!');</script>";
         }
     }
